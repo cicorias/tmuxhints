@@ -77,7 +77,7 @@ installs, launches and removes the package.
 | **Properties** | Category: *Developer tools*. Privacy policy URL: link to [`PRIVACY.md`](../PRIVACY.md) on GitHub. |
 | **Age ratings** | Complete the questionnaire (no user content, no data collection). |
 | **Store listing** | See below. |
-| **Submission options › restricted capabilities** | `runFullTrust` needs a justification, e.g. *"tmuxhints is a desktop tray app. It registers a global hotkey (RegisterHotKey) to show a tmux cheat-sheet window, and provides a command-line interface through an app execution alias."* |
+| **Submission options › restricted capabilities** | Paste the [`runFullTrust` justification](#runfulltrust-justification) below. |
 
 ### Store listing
 
@@ -113,6 +113,19 @@ first; it uses a throwaway config folder, so your settings aren't touched).
 |---|---|
 | ![Default prefix](store/1-cheatsheet-default-prefix.png) | ![Custom prefix](store/2-cheatsheet-custom-prefix.png) |
 | Default `Ctrl+b` prefix | Custom `Ctrl+a` prefix |
+
+## runFullTrust justification
+
+Partner Center asks for this on the submission's **Submission options** page once the
+uploaded package declares the capability. Paste:
+
+```text
+tmuxhints is a desktop (Win32) tray app that shows a tmux keyboard-shortcut cheat sheet. It needs runFullTrust to:
+- register a system-wide hotkey (RegisterHotKey, default Win+Ctrl+K) that shows and hides the cheat-sheet window from any app;
+- show a notification-area (tray) icon and menu;
+- provide a command-line interface through its app execution alias (e.g. "tmuxhints prefix set C-a").
+It makes no network connections, collects no data, does not run elevated, and only reads and writes its own settings in the user's AppData folder.
+```
 
 ## About `runFullTrust`
 
