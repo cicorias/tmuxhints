@@ -1,0 +1,103 @@
+{
+  "title": "tmux cheat sheet",
+  "subtitle": "Default bindings, tmux 3.7",
+  "sections": [
+    {
+      "name": "Sessions",
+      "items": [
+        { "keys": "tmux", "desc": "New session" },
+        { "keys": "tmux new -s name", "desc": "New named session" },
+        { "keys": "tmux ls", "desc": "List sessions" },
+        { "keys": "tmux a", "desc": "Attach to last session" },
+        { "keys": "tmux a -t name", "desc": "Attach to named session" },
+        { "keys": "Prefix d", "desc": "Detach" },
+        { "keys": "Prefix D", "desc": "Choose a client to detach" },
+        { "keys": "Prefix ( / )", "desc": "Previous / next session" },
+        { "keys": "Prefix L", "desc": "Last session" },
+        { "keys": "Prefix $", "desc": "Rename session" },
+        { "keys": "Prefix s", "desc": "Session list (interactive)" },
+        { "keys": "tmux kill-session -t name", "desc": "Kill session" },
+        { "keys": "tmux kill-server", "desc": "Kill all sessions" }
+      ]
+    },
+    {
+      "name": "Windows",
+      "items": [
+        { "keys": "Prefix c", "desc": "Create window" },
+        { "keys": "Prefix ,", "desc": "Rename window" },
+        { "keys": "Prefix n / p", "desc": "Next / previous window" },
+        { "keys": "Prefix l", "desc": "Last window" },
+        { "keys": "Prefix 0-9", "desc": "Select by number" },
+        { "keys": "Prefix '", "desc": "Select by index (prompt)" },
+        { "keys": "Prefix w", "desc": "Window list" },
+        { "keys": "Prefix f", "desc": "Find window" },
+        { "keys": "Prefix &", "desc": "Kill window" },
+        { "keys": "Prefix .", "desc": "Move window" }
+      ]
+    },
+    {
+      "name": "Panes",
+      "items": [
+        { "keys": "Prefix %", "desc": "Split left / right" },
+        { "keys": "Prefix \"", "desc": "Split top / bottom" },
+        { "keys": "Prefix Arrows", "desc": "Navigate panes" },
+        { "keys": "Prefix o", "desc": "Next pane" },
+        { "keys": "Prefix ;", "desc": "Last active pane" },
+        { "keys": "Prefix q", "desc": "Show pane numbers (press a number to jump)" },
+        { "keys": "Prefix z", "desc": "Toggle zoom" },
+        { "keys": "Prefix x", "desc": "Kill pane" },
+        { "keys": "Prefix } / {", "desc": "Swap pane forward / backward" },
+        { "keys": "Prefix !", "desc": "Break pane to window" },
+        { "keys": "Prefix Ctrl+Arrows", "desc": "Resize by 1 (repeatable)" },
+        { "keys": "Prefix Alt+Arrows", "desc": "Resize by 5 (repeatable)" },
+        { "keys": "Prefix Space", "desc": "Cycle layouts" },
+        { "keys": "Prefix Alt+1..7", "desc": "Preset layouts" },
+        { "keys": "Prefix E", "desc": "Spread panes evenly" },
+        { "keys": "Prefix m", "desc": "Mark pane" },
+        { "keys": "Prefix *", "desc": "New floating pane (tmux 3.7+)" }
+      ]
+    },
+    {
+      "name": "Copy mode",
+      "note": "vi keys: set -g mode-keys vi",
+      "items": [
+        { "keys": "Prefix [", "desc": "Enter copy mode" },
+        { "keys": "Prefix PgUp", "desc": "Enter copy mode and scroll up" },
+        { "keys": "PgUp / PgDn", "desc": "Scroll" },
+        { "keys": "h j k l", "desc": "Move" },
+        { "keys": "0 / $", "desc": "Line start / end" },
+        { "keys": "g / G", "desc": "Top / bottom of history" },
+        { "keys": "/ ?", "desc": "Search down / up" },
+        { "keys": "n / N", "desc": "Next / previous match" },
+        { "keys": "Space", "desc": "Start selection" },
+        { "keys": "v / V", "desc": "Rectangle toggle / select line" },
+        { "keys": "Enter", "desc": "Copy selection and exit" },
+        { "keys": "Esc / q", "desc": "Clear selection / exit" },
+        { "keys": "Prefix ]", "desc": "Paste most recent buffer" },
+        { "keys": "Prefix =", "desc": "Choose buffer to paste" },
+        { "keys": "Prefix #", "desc": "List buffers" }
+      ]
+    },
+    {
+      "name": "Command mode & help",
+      "items": [
+        { "keys": "Prefix :", "desc": "Command prompt" },
+        { "keys": "Prefix ?", "desc": "List key bindings" },
+        { "keys": "Prefix /", "desc": "Describe one key" },
+        { "keys": "Prefix C", "desc": "Customize options and keys" },
+        { "keys": "Prefix ~", "desc": "Message log" },
+        { "keys": "tmux source-file ~/.tmux.conf", "desc": "Reload config (or Prefix : then source-file …)" }
+      ]
+    },
+    {
+      "name": "Misc",
+      "items": [
+        { "keys": "Prefix t", "desc": "Clock" },
+        { "keys": "Prefix r", "desc": "Redraw client" },
+        { "keys": "Prefix Ctrl+z", "desc": "Suspend client" },
+        { "keys": "tmux -V", "desc": "Version" },
+        { "keys": "tmux info", "desc": "Server and terminal info" }
+      ]
+    }
+  ]
+}

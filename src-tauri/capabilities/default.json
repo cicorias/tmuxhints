@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The cheat-sheet popup: core APIs only (events for live reload).",
+  "windows": ["popup"],
+  "permissions": ["core:default"]
+}

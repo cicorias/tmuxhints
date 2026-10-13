@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Source for every app/tray icon size: `mise run icons` regenerates them. -->
+  <rect width="1024" height="1024" rx="220" fill="#15171c"/>
+  <rect x="150" y="150" width="724" height="570" rx="44" fill="none" stroke="#e6e8ec" stroke-width="44"/>
+  <path d="M512 150V720M512 435H874" stroke="#e6e8ec" stroke-width="44"/>
+  <rect x="222" y="232" width="70" height="110" rx="10" fill="#3fb950"/>
+  <rect x="150" y="770" width="724" height="104" rx="40" fill="#3fb950"/>
+</svg>

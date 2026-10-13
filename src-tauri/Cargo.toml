@@ -1,0 +1,25 @@
+[package]
+name = "tmuxhints"
+version = "0.1.0"
+description = "Tray app that pops up a tmux cheat sheet on a global hotkey"
+publish = false
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+auto-launch = "0.6.0"
+clap = { version = "4.6.7", features = ["derive"] }
+dirs = "7.0.0"
+global-hotkey = "0.8"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-single-instance = "2"
+
+[target."cfg(windows)".dependencies]
+windows-sys = { version = "0.61.2", features = ["Win32_System_Console", "Win32_UI_WindowsAndMessaging"] }

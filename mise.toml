@@ -57,6 +57,10 @@ run = "cargo tauri build"
 description = "Build release bundles into ./dist (pass --target <triple> to pick the target)"
 run = "cargo xtask dist"
 
+[tasks.icons]
+description = "Regenerate all app icons from src-tauri/icons/icon.svg"
+run = "cargo tauri icon src-tauri/icons/icon.svg --output src-tauri/icons"
+
 [tasks.clean]
 description = "Remove build output"
 run = "cargo clean"

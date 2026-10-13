@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>tmux cheat sheet</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="main.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <div class="title">
+        <h1 id="title">tmux cheat sheet</h1>
+        <p id="subtitle"></p>
+      </div>
+      <div class="prefix" aria-label="tmux prefix">
+        <span class="label">Prefix</span>
+        <kbd class="key key-prefix" id="prefix">Ctrl+b</kbd>
+        <span class="hint">press and release, then the key</span>
+      </div>
+    </header>
+    <p class="warning" id="warning" hidden></p>
+    <main><div class="columns" id="sections"></div></main>
+    <footer>
+      <span><kbd class="key">Esc</kbd> or <kbd class="key" id="hotkey"></kbd> to close</span>
+      <span>Change the prefix: <code>tmuxhints prefix set C-a</code></span>
+    </footer>
+  </body>
+</html>
