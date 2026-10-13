@@ -7,6 +7,7 @@ mod cheatsheet;
 mod cli;
 mod hotkey;
 mod hyprland;
+mod packaged;
 mod settings;
 
 use clap::Parser;

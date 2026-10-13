@@ -172,9 +172,10 @@ pub fn run(cmd: Cmd) -> ExitCode {
         Cmd::Config {
             cmd: ConfigCmd::Path,
         } => {
-            println!("{}", settings::config_dir().display());
-            println!("  settings:   {}", settings::settings_path().display());
-            println!("  cheatsheet: {}", settings::cheatsheet_path().display());
+            let dir = settings::visible_config_dir();
+            println!("{}", dir.display());
+            println!("  settings:   {}", dir.join("settings.json").display());
+            println!("  cheatsheet: {}", dir.join("cheatsheet.json").display());
             Ok(true)
         }
     };

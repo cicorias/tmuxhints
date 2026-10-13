@@ -136,12 +136,17 @@ mise tasks        # everything else
 ```
 src-tauri/   Rust app: tray, hotkey, CLI, settings, Hyprland integration
 ui/          the cheat-sheet popup (HTML/CSS/JS)
-scripts/     project scripts in Rust (cargo xtask doctor | dist)
+scripts/     project scripts in Rust (cargo xtask doctor | dist | msix)
+packaging/   Microsoft Store manifest template and package identity
 ```
 
 **Releasing:** bump `version` in `src-tauri/Cargo.toml` and push a `v*` tag. CI builds
 every platform and creates a draft release with all installers and checksums. Review it,
 then publish.
+
+**Microsoft Store:** `mise run msix` builds the x64 + ARM64 `.msixbundle`; see
+[docs/microsoft-store.md](docs/microsoft-store.md) for identity setup, local testing and
+submission.
 
 ## License
 

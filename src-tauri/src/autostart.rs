@@ -1,7 +1,8 @@
-//! Start at logon. Windows: per-user `Run` registry key. macOS: LaunchAgent.
-//! Hyprland: an `exec-once` managed block. Other Linux desktops: XDG autostart entry.
+//! Start at logon. Windows: per-user `Run` registry key, or the package's StartupTask
+//! for the Microsoft Store build. macOS: LaunchAgent. Hyprland: an `exec-once` managed
+//! block. Other Linux desktops: XDG autostart entry.
 
-use crate::hyprland;
+use crate::{hyprland, packaged};
 use auto_launch::{AutoLaunch, AutoLaunchBuilder, MacOSLaunchMode, WindowsEnableMode};
 
 fn launcher() -> Result<AutoLaunch, String> {
@@ -19,6 +20,10 @@ fn launcher() -> Result<AutoLaunch, String> {
 }
 
 pub fn is_enabled() -> Result<bool, String> {
+    #[cfg(windows)]
+    if packaged::is_packaged() {
+        return packaged::startup_task::is_enabled();
+    }
     if hyprland::detected() {
         let content = hyprland::read(hyprland::AUTOSTART)?;
         let body = hyprland::autostart_line();
@@ -30,6 +35,10 @@ pub fn is_enabled() -> Result<bool, String> {
 }
 
 pub fn set(enabled: bool) -> Result<(), String> {
+    #[cfg(windows)]
+    if packaged::is_packaged() {
+        return packaged::startup_task::set(enabled);
+    }
     if hyprland::detected() {
         let block = hyprland::AUTOSTART;
         let content = hyprland::read(block)?;
@@ -58,7 +67,9 @@ pub fn set(enabled: bool) -> Result<(), String> {
 
 /// Where autostart is configured, for status output.
 pub fn location() -> String {
-    if hyprland::detected() {
+    if packaged::is_packaged() {
+        "Settings > Apps > Startup".to_string()
+    } else if hyprland::detected() {
         format!(
             "exec-once in {}",
             hyprland::path(hyprland::AUTOSTART).display()

@@ -57,6 +57,18 @@ run = "cargo tauri build"
 description = "Build release bundles into ./dist (pass --target <triple> to pick the target)"
 run = "cargo xtask dist"
 
+[tasks.msix]
+description = "Build the Microsoft Store package into ./dist (x64 + arm64 .msixbundle)"
+run = "cargo xtask msix --target x86_64-pc-windows-msvc --target aarch64-pc-windows-msvc"
+
+[tasks."msix:register"]
+description = "Install the unsigned Store package locally (needs Developer Mode)"
+run = "cargo xtask msix-register"
+
+[tasks."msix:unregister"]
+description = "Remove the local Store package install"
+run = "cargo xtask msix-unregister"
+
 [tasks.icons]
 description = "Regenerate all app icons from src-tauri/icons/icon.svg"
 run = "cargo tauri icon src-tauri/icons/icon.svg --output src-tauri/icons"

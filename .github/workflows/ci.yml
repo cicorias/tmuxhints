@@ -71,6 +71,26 @@ jobs:
           path: dist/*
           if-no-files-found: error
 
+  # Microsoft Store package (x64 + arm64 .msixbundle), unsigned: the Store signs it on
+  # upload. Download it from the run's artifacts and upload it in Partner Center. It is
+  # not attached to GitHub releases, since an unsigned package can't be installed there.
+  msix:
+    needs: check
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          cache-key: msix
+      - run: mise run msix
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: store-msixbundle
+          path: dist/*.msixbundle
+          if-no-files-found: error
+
   # Tags like v0.1.0 produce a draft release; publish it by hand after a look.
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -82,6 +102,7 @@ jobs:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: dist
+          pattern: tmuxhints-*
           merge-multiple: true
       - name: Write checksums
         working-directory: dist

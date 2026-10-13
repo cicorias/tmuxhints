@@ -1,6 +1,8 @@
 //! Project scripts for tmuxhints, run as `cargo xtask <command>`.
 //! mise tasks (see ../mise.toml) are the usual entry point.
 
+mod msix;
+
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, ExitCode};
@@ -10,22 +12,22 @@ const APP: &str = "tmuxhints";
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    match args.first().map(String::as_str) {
-        Some("doctor") => doctor(),
-        Some("dist") => match dist(&args[1..]) {
-            Ok(()) => ExitCode::SUCCESS,
-            Err(e) => {
-                eprintln!("error: {e}");
-                ExitCode::FAILURE
-            }
-        },
+    let result = match args.first().map(String::as_str) {
+        Some("doctor") => return doctor(),
+        Some("dist") => dist(&args[1..]),
+        Some("msix") => msix::build(&args[1..]),
+        Some("msix-register") => msix::register(),
+        Some("msix-unregister") => msix::unregister(),
         None | Some("help" | "-h" | "--help") => {
             print_help();
-            ExitCode::SUCCESS
+            return ExitCode::SUCCESS;
         }
-        Some(other) => {
-            eprintln!("unknown command: {other}\n");
-            print_help();
+        Some(other) => Err(format!("unknown command: {other}")),
+    };
+    match result {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(e) => {
+            eprintln!("error: {e}");
             ExitCode::FAILURE
         }
     }
@@ -38,7 +40,12 @@ fn print_help() {
 Commands:
   doctor                       Check the toolchain and OS prerequisites
   dist [--target <triple>]     Build release bundles into ./dist
-                               (default target: this machine)"
+                               (default target: this machine)
+  msix [--target <triple>]...  Build the Microsoft Store package into ./dist
+                               (several targets make one .msixbundle)
+  msix-register                Install the unsigned package for this machine
+                               (needs Windows Developer Mode)
+  msix-unregister              Remove that local install"
     );
 }
 

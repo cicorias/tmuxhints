@@ -212,6 +212,11 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
                 let want = !autostart::is_enabled().unwrap_or(false);
                 if let Err(e) = autostart::set(want) {
                     eprintln!("tmuxhints: autostart: {e}");
+                    // A Store install the user switched off in Settings can only be
+                    // switched back on there, so take them to that page.
+                    if cfg!(windows) && crate::packaged::is_packaged() {
+                        open("ms-settings:startupapps");
+                    }
                 }
                 let _ = startup.set_checked(autostart::is_enabled().unwrap_or(false));
             }
@@ -237,8 +242,11 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
 }
 
 fn open_config_folder() {
-    let dir = settings::config_dir();
-    let _ = std::fs::create_dir_all(&dir);
+    open(&settings::visible_config_dir().display().to_string());
+}
+
+/// Opens a folder or URI with the desktop's default handler.
+fn open(target: &str) {
     let opener = if cfg!(windows) {
         "explorer"
     } else if cfg!(target_os = "macos") {
@@ -246,7 +254,7 @@ fn open_config_folder() {
     } else {
         "xdg-open"
     };
-    let _ = std::process::Command::new(opener).arg(dir).spawn();
+    let _ = std::process::Command::new(opener).arg(target).spawn();
 }
 
 #[derive(Serialize)]

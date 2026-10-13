@@ -33,6 +33,15 @@ pub fn config_dir() -> PathBuf {
         .join("tmuxhints")
 }
 
+/// `config_dir()` as seen from outside the app: the same path, except for the Microsoft
+/// Store build, whose %APPDATA% writes Windows may redirect into the package's folder.
+/// Use this when showing the folder to the user or opening it in a file manager.
+pub fn visible_config_dir() -> PathBuf {
+    // Creating it first settles where Windows puts it for a packaged app.
+    let _ = fs::create_dir_all(config_dir());
+    crate::packaged::real_roaming_path(config_dir())
+}
+
 pub fn settings_path() -> PathBuf {
     config_dir().join("settings.json")
 }
