@@ -274,9 +274,148 @@ pub fn unregister() -> Result<(), String> {
     )
 }
 
+/// `cargo xtask msix-wack`: runs the Windows App Certification Kit on the bundle in
+/// ./dist and summarizes the report. appcert needs admin rights, so both calls go
+/// through Windows `sudo` (you approve a UAC prompt for each).
+pub fn wack() -> Result<(), String> {
+    let program_files = std::env::var("ProgramFiles(x86)")
+        .map_err(|_| "ProgramFiles(x86) is not set; is this Windows?".to_string())?;
+    let appcert =
+        Path::new(&program_files).join(r"Windows Kits\10\App Certification Kit\appcert.exe");
+    if !appcert.exists() {
+        return Err(format!(
+            "{} not found; install the Windows SDK's App Certification Kit",
+            appcert.display()
+        ));
+    }
+
+    // The kit launches the app; a running copy would receive those launches instead.
+    if super::output("tasklist", &["/FI", "IMAGENAME eq tmuxhints.exe", "/NH"])
+        .is_some_and(|out| out.contains("tmuxhints.exe"))
+    {
+        return Err(
+            "tmuxhints is running; quit it first (tray menu or `tmuxhints --quit`)".to_string(),
+        );
+    }
+
+    let root = workspace_root();
+    let bundle = fs::read_dir(root.join("dist"))
+        .map_err(|e| format!("dist/: {e}; run `mise run msix` first"))?
+        .filter_map(|e| e.ok().map(|e| e.path()))
+        .find(|p| p.extension().is_some_and(|x| x == "msixbundle"))
+        .ok_or("no .msixbundle in dist/; run `mise run msix` first")?;
+
+    let reports = root.join("target").join("wack");
+    fs::create_dir_all(&reports).map_err(|e| format!("creating {}: {e}", reports.display()))?;
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_secs());
+    // appcert refuses to overwrite an existing report, so every run gets its own file.
+    let report = reports.join(format!("report-{stamp}.xml"));
+
+    let appcert = path_str(&appcert);
+    println!(
+        "Running the App Certification Kit; approve the UAC prompts and leave the machine alone until it finishes."
+    );
+    run("sudo", &[&appcert, "reset"])?;
+    let test = run(
+        "sudo",
+        &[
+            &appcert,
+            "test",
+            "-appxpackagepath",
+            &path_str(&bundle),
+            "-reportoutputpath",
+            &path_str(&report),
+        ],
+    );
+
+    let xml = fs::read_to_string(&report).map_err(|e| {
+        format!(
+            "no report at {} ({e}); appcert result: {test:?}",
+            report.display()
+        )
+    })?;
+    let summary = summarize_report(&xml);
+    println!("\n{summary}\nfull report: {}", report.display());
+    if summary.starts_with("PASS") {
+        Ok(())
+    } else {
+        Err("certification checks did not all pass".to_string())
+    }
+}
+
+/// Overall result plus every test that didn't pass, from an appcert XML report.
+fn summarize_report(xml: &str) -> String {
+    let overall = attr(xml, "OVERALL_RESULT").unwrap_or_else(|| "UNKNOWN".to_string());
+    let mut lines = vec![overall];
+    for test in xml.split("<TEST ").skip(1) {
+        let test = test.split("</TEST>").next().unwrap_or(test);
+        let result = test
+            .split("<RESULT>")
+            .nth(1)
+            .and_then(|r| r.split("</RESULT>").next())
+            .map(|r| {
+                r.trim()
+                    .trim_start_matches("<![CDATA[")
+                    .trim_end_matches("]]>")
+                    .trim()
+            })
+            .unwrap_or("");
+        if result.eq_ignore_ascii_case("PASS") || result.is_empty() {
+            continue;
+        }
+        let name = attr(test, "NAME").unwrap_or_else(|| "(unnamed test)".to_string());
+        lines.push(format!("  {result}: {name}"));
+        for message in test.split("<MESSAGE ").skip(1) {
+            if let Some(text) = attr(message, "TEXT") {
+                lines.push(format!("      {text}"));
+            }
+        }
+    }
+    lines.join("\n")
+}
+
+/// Value of the first `name="..."` attribute in `s`.
+fn attr(s: &str, name: &str) -> Option<String> {
+    let start = s.find(&format!("{name}=\""))? + name.len() + 2;
+    let len = s[start..].find('"')?;
+    Some(
+        s[start..start + len]
+            .replace("&quot;", "\"")
+            .replace("&amp;", "&"),
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn summarizes_failures_from_a_wack_report() {
+        let xml = r#"<?xml version="1.0"?>
+<REPORT OVERALL_RESULT="FAIL" VERSION="10.0">
+  <REQUIREMENTS>
+    <REQUIREMENT NUMBER="1" TITLE="Package sanity">
+      <TEST INDEX="1" NAME="Blocked executables" DESCRIPTION="x">
+        <RESULT><![CDATA[PASS]]></RESULT>
+      </TEST>
+      <TEST INDEX="2" NAME="Supported API test" DESCRIPTION="y">
+        <RESULT><![CDATA[FAIL]]></RESULT>
+        <MESSAGES><MESSAGE TEXT="API Foo in bar.dll is not supported" /></MESSAGES>
+      </TEST>
+    </REQUIREMENT>
+  </REQUIREMENTS>
+</REPORT>"#;
+        assert_eq!(
+            summarize_report(xml),
+            "FAIL\n  FAIL: Supported API test\n      API Foo in bar.dll is not supported"
+        );
+        assert_eq!(
+            summarize_report(r#"<REPORT OVERALL_RESULT="PASS">"#),
+            "PASS"
+        );
+    }
 
     #[test]
     fn versions_get_a_fourth_zero_part() {

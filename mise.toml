@@ -69,6 +69,11 @@ run = "cargo xtask msix-register"
 description = "Remove the local Store package install"
 run = "cargo xtask msix-unregister"
 
+[tasks."msix:wack"]
+description = "Build the Store package and run the App Certification Kit on it (uses sudo)"
+depends = ["msix"]
+run = "cargo xtask msix-wack"
+
 [tasks.icons]
 description = "Regenerate all app icons from src-tauri/icons/icon.svg"
 run = "cargo tauri icon src-tauri/icons/icon.svg --output src-tauri/icons"

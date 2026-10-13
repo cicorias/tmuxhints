@@ -18,6 +18,7 @@ fn main() -> ExitCode {
         Some("msix") => msix::build(&args[1..]),
         Some("msix-register") => msix::register(),
         Some("msix-unregister") => msix::unregister(),
+        Some("msix-wack") => msix::wack(),
         None | Some("help" | "-h" | "--help") => {
             print_help();
             return ExitCode::SUCCESS;
@@ -45,7 +46,9 @@ Commands:
                                (several targets make one .msixbundle)
   msix-register                Install the unsigned package for this machine
                                (needs Windows Developer Mode)
-  msix-unregister              Remove that local install"
+  msix-unregister              Remove that local install
+  msix-wack                    Run the App Certification Kit on dist/*.msixbundle
+                               (elevates with `sudo`)"
     );
 }
 

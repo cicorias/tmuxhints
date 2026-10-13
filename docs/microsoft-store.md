@@ -54,6 +54,19 @@ mise run msix:unregister   # remove it (also deletes its private data)
 
 Quit any other running tmuxhints first; a running copy receives the launch instead.
 
+### Run the App Certification Kit
+
+The Store runs the same checks during certification; running them first saves a round
+trip. It needs admin rights, so it elevates with Windows `sudo` (one UAC prompt per
+step):
+
+```sh
+mise run msix:wack    # rebuild the bundle, run appcert, summarize failures
+```
+
+Reports are kept in `target/wack/`. Leave the machine alone while it runs: the kit
+installs, launches and removes the package.
+
 ## Submission
 
 | Section | What to enter |
