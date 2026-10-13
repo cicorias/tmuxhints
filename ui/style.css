@@ -194,10 +194,16 @@ code {
   color: var(--text);
 }
 
+footer .key + .key {
+  margin-left: 2px;
+}
+
 footer {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 6px 16px;
   padding: 8px 20px;
   border-top: 1px solid var(--border);
   color: var(--muted);

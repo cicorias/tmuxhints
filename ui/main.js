@@ -59,8 +59,76 @@ async function load() {
   render(await invoke("get_cheatsheet"));
 }
 
+// Keyboard scrolling, vim/less style:
+//   j k ↑ ↓            one line         Ctrl+d Ctrl+u     half page
+//   Space Shift+Space  PgDn PgUp        Ctrl+f Ctrl+b     full page
+//   gg Home / G End    top / bottom     Esc q             close
+const scroller = document.querySelector("main");
+const LINE = 48;
+const GG_WINDOW_MS = 600;
+let lastG = -Infinity; // time of a pending first `g`
+
+function scrollByAmount(top, smooth = false) {
+  scroller.scrollBy({ top, behavior: smooth ? "smooth" : "auto" });
+}
+
+function scrollToEdge(bottom) {
+  scroller.scrollTo({ top: bottom ? scroller.scrollHeight : 0, behavior: "smooth" });
+}
+
+function keyAction(event) {
+  const page = scroller.clientHeight * 0.9;
+  const half = scroller.clientHeight / 2;
+
+  if (event.ctrlKey) {
+    return {
+      d: () => scrollByAmount(half, true),
+      u: () => scrollByAmount(-half, true),
+      f: () => scrollByAmount(page, true),
+      b: () => scrollByAmount(-page, true),
+    }[event.key];
+  }
+
+  switch (event.key) {
+    case "j":
+    case "ArrowDown":
+      return () => scrollByAmount(LINE);
+    case "k":
+    case "ArrowUp":
+      return () => scrollByAmount(-LINE);
+    case " ":
+      return () => scrollByAmount(event.shiftKey ? -page : page, true);
+    case "PageDown":
+      return () => scrollByAmount(page, true);
+    case "PageUp":
+      return () => scrollByAmount(-page, true);
+    case "Home":
+      return () => scrollToEdge(false);
+    case "End":
+    case "G":
+      return () => scrollToEdge(true);
+    case "g":
+      // `gg` goes to the top; a lone `g` just waits for the second one.
+      if (event.timeStamp - lastG < GG_WINDOW_MS) {
+        return () => {
+          lastG = -Infinity;
+          scrollToEdge(false);
+        };
+      }
+      return () => (lastG = event.timeStamp);
+    case "Escape":
+    case "q":
+      return () => invoke("hide_popup");
+  }
+}
+
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") invoke("hide_popup");
+  if (event.altKey || event.metaKey) return;
+  const action = keyAction(event);
+  if (event.key !== "g") lastG = -Infinity;
+  if (!action) return;
+  event.preventDefault();
+  action();
 });
 
 listen("reload", load);
