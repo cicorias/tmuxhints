@@ -1,0 +1,62 @@
+# tmuxhints — project toolchain and task runner.
+#   mise install        install the tools below
+#   mise tasks          list tasks
+#   mise run <task>     run one (e.g. `mise run check`)
+#
+# Simple tasks call cargo directly; anything with logic lives in the Rust
+# xtask crate at ./scripts and is invoked as `cargo xtask <cmd>`.
+min_version = "2026.10.0"
+
+[tools]
+rust = { version = "1.99", components = "rustfmt,clippy" }
+# Lets the cargo: backend download prebuilt binaries instead of compiling them.
+cargo-binstall = "latest"
+"cargo:tauri-cli" = "2"
+actionlint = "1.7"
+
+[env]
+CARGO_TERM_COLOR = "always"
+
+[tasks.doctor]
+description = "Check the toolchain and OS prerequisites (WebView2, MSVC, webkit2gtk, ...)"
+run = "cargo xtask doctor"
+
+[tasks.fmt]
+description = "Format all Rust code"
+run = "cargo fmt --all"
+
+[tasks."fmt:check"]
+description = "Fail if any Rust code is not formatted"
+run = "cargo fmt --all -- --check"
+
+[tasks.lint]
+description = "Run clippy with warnings as errors"
+run = "cargo clippy --workspace --all-targets -- -D warnings"
+
+[tasks.test]
+description = "Run all tests"
+run = "cargo test --workspace"
+
+[tasks."lint:ci"]
+description = "Lint the GitHub Actions workflows"
+run = "actionlint"
+
+[tasks.check]
+description = "Format check, lint and test (what CI runs)"
+depends = ["fmt:check", "lint", "lint:ci", "test"]
+
+[tasks.dev]
+description = "Run the app with hot reload"
+run = "cargo tauri dev"
+
+[tasks.build]
+description = "Build release binaries and installers for this OS"
+run = "cargo tauri build"
+
+[tasks.dist]
+description = "Build release bundles into ./dist (pass --target <triple> to pick the target)"
+run = "cargo xtask dist"
+
+[tasks.clean]
+description = "Remove build output"
+run = "cargo clean"
