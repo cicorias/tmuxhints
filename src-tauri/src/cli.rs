@@ -29,6 +29,10 @@ pub struct Cli {
     #[arg(long)]
     pub hide: bool,
 
+    /// Quit the running app
+    #[arg(long, conflicts_with_all = ["toggle", "show", "hide"])]
+    pub quit: bool,
+
     /// Make the running app re-read its settings (used by `hotkey set` / `prefix set`)
     #[arg(long, hide = true)]
     pub reload: bool,
@@ -41,6 +45,7 @@ pub enum Action {
     Toggle,
     Show,
     Hide,
+    Quit,
     Reload,
 }
 
@@ -52,6 +57,8 @@ impl Cli {
             Action::Show
         } else if self.hide {
             Action::Hide
+        } else if self.quit {
+            Action::Quit
         } else if self.reload {
             Action::Reload
         } else {
@@ -388,6 +395,10 @@ mod tests {
         assert_eq!(
             forwarded_action(&argv(&["tmuxhints", "--reload"])),
             Action::Reload
+        );
+        assert_eq!(
+            forwarded_action(&argv(&["tmuxhints", "--quit"])),
+            Action::Quit
         );
     }
 }

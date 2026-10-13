@@ -14,7 +14,7 @@ A small tray app that pops up a tmux cheat sheet on a global hotkey
 
 ```sh
 tmuxhints                          # start in the tray (a second launch shows the sheet)
-tmuxhints --toggle | --show | --hide
+tmuxhints --toggle | --show | --hide | --quit
 
 tmuxhints hotkey get
 tmuxhints hotkey set "Win+Ctrl+K" [--force]   # checks for conflicts first

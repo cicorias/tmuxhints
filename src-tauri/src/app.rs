@@ -18,13 +18,9 @@ const TRAY: &str = "main";
 static HAD_FOCUS: AtomicBool = AtomicBool::new(false);
 
 pub fn run(action: Action) {
-    // A second launch never gets here: the single-instance plugin hands its arguments
-    // to the running app and exits. Reaching setup with --reload means nothing was running.
-    if action == Action::Reload {
-        return;
-    }
-
     let app = tauri::Builder::default()
+        // Must be the first plugin. In a second launch it hands our arguments to the
+        // running app and exits the process, so nothing after it runs.
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
             handle(app, cli::forwarded_action(&argv));
         }))
@@ -39,6 +35,12 @@ pub fn run(action: Action) {
         )
         .invoke_handler(tauri::generate_handler![get_cheatsheet, hide_popup])
         .setup(move |app| {
+            // Getting this far means no other instance was running, so there is nobody
+            // to reload or quit: just leave.
+            if matches!(action, Action::Reload | Action::Quit) {
+                std::process::exit(0);
+            }
+
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
@@ -49,7 +51,11 @@ pub fn run(action: Action) {
                 .get_webview_window(POPUP)
                 .expect("popup window is defined in tauri.conf.json");
             let window = popup.clone();
+            let app_handle = app.handle().clone();
             popup.on_window_event(move |event| match event {
+                // Only `quit` destroys the popup (closing just hides it); the app is
+                // useless without it, so this is where Quit actually exits.
+                WindowEvent::Destroyed => app_handle.exit(0),
                 WindowEvent::Focused(true) => HAD_FOCUS.store(true, Ordering::Relaxed),
                 // Click-away closes the popup, but only once it actually had focus: when
                 // Windows refuses to hand focus to a background request, the popup gets a
@@ -101,6 +107,19 @@ fn handle(app: &AppHandle, action: Action) {
             apply_hotkey(app);
             let _ = app.emit("reload", ());
         }
+        Action::Quit => quit(app),
+    }
+}
+
+/// Destroys the popup first and exits once it is gone (see `WindowEvent::Destroyed`).
+/// Exiting with the WebView still alive makes WebView2 log "Failed to unregister class
+/// Chrome_WidgetWin_0. Error = 1412" on the way out.
+fn quit(app: &AppHandle) {
+    match app.get_webview_window(POPUP) {
+        Some(popup) => {
+            let _ = popup.destroy();
+        }
+        None => app.exit(0),
     }
 }
 
@@ -170,7 +189,7 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
         None::<&str>,
     )?;
     let config = MenuItem::with_id(app, "config", "Open config folder", true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+    let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
     let menu = Menu::with_items(
         app,
         &[
@@ -179,7 +198,7 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
             &startup,
             &config,
             &PredefinedMenuItem::separator(app)?,
-            &quit,
+            &quit_item,
         ],
     )?;
 
@@ -197,7 +216,7 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
                 let _ = startup.set_checked(autostart::is_enabled().unwrap_or(false));
             }
             "config" => open_config_folder(),
-            "quit" => app.exit(0),
+            "quit" => quit(app),
             _ => {}
         })
         .on_tray_icon_event(|tray, event| {
