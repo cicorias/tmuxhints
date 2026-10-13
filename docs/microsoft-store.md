@@ -19,7 +19,8 @@ location.
 
 ## One-time setup in Partner Center
 
-1. **Reserve the app name** (Apps and games › New product › MSIX or PWA app).
+1. **Reserve the app name** (Apps and games › New product › MSIX or PWA app). Reserved:
+   **tmuxhints**.
 2. Open **Product management › Product identity** and copy the three values into
    [`packaging/msix/identity.env`](../packaging/msix/identity.env):
 
@@ -103,6 +104,33 @@ installs, launches and removes the package.
 
 **Search terms**: tmux, terminal, cheat sheet, keyboard shortcuts, hotkey, developer tools, vim
 
-**Screenshots**: desktop screenshots must be at least **1366 × 768**. The README
-screenshot (1198 × 783) is too small, so capture the popup on a full-screen desktop
-background instead.
+**Screenshots** (desktop minimum 1366 × 768): upload the 1920 × 1080 captures in
+[`docs/store/`](store/). They're real captures of the popup on a plain background.
+Regenerate them after UI changes with `mise run store:screenshots` (quit tmuxhints
+first; it uses a throwaway config folder, so your settings aren't touched).
+
+| | |
+|---|---|
+| ![Default prefix](store/1-cheatsheet-default-prefix.png) | ![Custom prefix](store/2-cheatsheet-custom-prefix.png) |
+| Default `Ctrl+b` prefix | Custom `Ctrl+a` prefix |
+
+## About `runFullTrust`
+
+Every desktop (Win32) app in the Store declares the `runFullTrust` restricted capability:
+it means "this is a normal desktop app", not a sandboxed UWP app, and it's what lets
+tmuxhints register a global hotkey and show a tray icon. Partner Center asks you to
+justify any restricted capability, and submissions that use one get a manual review,
+which can add a day or two to certification. It isn't a red flag: it's the standard
+situation for any packaged desktop app, and the justification above is enough.
+
+## Certification kit results
+
+The last local run of the App Certification Kit (`mise run msix:wack`, 0.1.0.0) passed
+overall. One **optional** test reported issues, which don't block certification:
+
+- *Blocked executables*: the exe references `CreateProcessW` / `ShellExecuteW` and
+  contains the strings `cmd`, `cmd.exe` and `basH`. The process APIs are used to open
+  Explorer (**Open config folder**, Settings › Startup) and to signal a running copy of
+  itself (`--reload`). Rust's standard library contains `cmd.exe` for running batch
+  files, and `basH` looks like an incidental byte sequence in the binary. tmuxhints
+  never starts a shell.

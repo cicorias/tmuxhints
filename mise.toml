@@ -74,6 +74,13 @@ description = "Build the Store package and run the App Certification Kit on it (
 depends = ["msix"]
 run = "cargo xtask msix-wack"
 
+[tasks."store:screenshots"]
+description = "Capture Store screenshots of the real popup into docs/store (Windows; quit tmuxhints first)"
+run = [
+  "cargo build -p tmuxhints",
+  "pwsh -NoProfile -File scripts/store-screenshots.ps1",
+]
+
 [tasks.icons]
 description = "Regenerate all app icons from src-tauri/icons/icon.svg"
 run = "cargo tauri icon src-tauri/icons/icon.svg --output src-tauri/icons"

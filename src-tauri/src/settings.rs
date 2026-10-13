@@ -27,7 +27,11 @@ impl Default for Settings {
 }
 
 /// `%APPDATA%\tmuxhints`, `~/Library/Application Support/tmuxhints` or `~/.config/tmuxhints`.
+/// `TMUXHINTS_CONFIG_DIR` overrides it (tests, screenshots, portable setups).
 pub fn config_dir() -> PathBuf {
+    if let Some(dir) = std::env::var_os("TMUXHINTS_CONFIG_DIR").filter(|d| !d.is_empty()) {
+        return PathBuf::from(dir);
+    }
     dirs::config_dir()
         .unwrap_or_else(|| PathBuf::from("."))
         .join("tmuxhints")

@@ -133,6 +133,9 @@ mise run dist     # build installers for this machine into ./dist
 mise tasks        # everything else
 ```
 
+Set `TMUXHINTS_CONFIG_DIR` to run the app against a separate config folder (handy for
+testing without touching your own settings).
+
 ```
 src-tauri/   Rust app: tray, hotkey, CLI, settings, Hyprland integration
 ui/          the cheat-sheet popup (HTML/CSS/JS)
